@@ -1,0 +1,10 @@
+{
+  "name": "직업전쟁",
+  "short_name": "직업전쟁",
+  "description": "미사일 없는 포트리스. 직업마다 던지는 물건이 다릅니다.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#241820",
+  "theme_color": "#241820",
+  "lang": "ko"
+}

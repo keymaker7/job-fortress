@@ -9,6 +9,7 @@
   const ctx = canvas.getContext("2d");
 
   const hud = document.getElementById("hud");
+  const hudSky = document.getElementById("hud-sky");
   const hudWind = document.getElementById("hud-wind");
   const hudTurn = document.getElementById("hud-turn");
   const hudAngle = document.getElementById("hud-angle");
@@ -268,7 +269,7 @@
     resetAim();
     state.scene = "battle";
     hideAllScreens();
-    hud.classList.remove("hidden");
+    showBattleUi(true);
     showBanner(`${current().char.emoji} 시작!`);
     showToast(current().char.quotes.idle, 1900);
     audio.turn();
@@ -277,6 +278,15 @@
 
   function hideAllScreens() {
     [screenTitle, screenSelect, screenResult, screenHowto].forEach((el) => el.classList.add("hidden"));
+  }
+
+  function showBattleUi(on) {
+    hud.classList.toggle("hidden", !on);
+    hudSky.classList.toggle("hidden", !on);
+  }
+
+  function isCoarsePointer() {
+    return window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 820px)").matches;
   }
 
   function current() { return state.players[state.turn]; }
@@ -321,7 +331,9 @@
       hudTurn.textContent = cpuTurn ? `컴퓨터 ${who.char.name}` : `${who.slot + 1}P ${who.char.name}`;
       hudHelp.textContent = cpuTurn
         ? "컴퓨터가 천천히 조준하는 중…"
-        : "↑↓ 각도 · ←→ 조금 이동 · 스페이스를 누르면 힘이 차고, 떼면 날아갑니다";
+        : (isCoarsePointer()
+          ? "아래 버튼으로 각도·걷기 · 발사를 누르고 있으면 힘이 찹니다"
+          : "↑↓ 각도 · ←→ 조금 이동 · 스페이스를 누르면 힘이 차고, 떼면 날아갑니다");
     }
     hudAngle.textContent = `${Math.round(displayAngle())}°`;
     const frozen = state.frozen[who.slot] > 0;
@@ -461,7 +473,7 @@
   function finish(winner, draw) {
     state.scene = "result";
     state.phase = "done";
-    hud.classList.add("hidden");
+    showBattleUi(false);
     screenResult.classList.remove("hidden");
     audio.win();
     const g = resultArt.getContext("2d");
@@ -1210,7 +1222,7 @@
   function goHome() {
     audio.ui();
     state.scene = "title";
-    hud.classList.add("hidden");
+    showBattleUi(false);
     hideAllScreens();
     screenTitle.classList.remove("hidden");
     toastEl.classList.add("hidden");
@@ -1257,25 +1269,47 @@
   canvas.addEventListener("pointerdown", (e) => {
     if (!canControl()) return;
     aimFromPointer(e);
+    if (isCoarsePointer()) return;
     state.charging = true;
     state.chargeDir = 1;
     state.power = 0;
   });
-  canvas.addEventListener("pointermove", (e) => { if (state.charging) aimFromPointer(e); });
-  canvas.addEventListener("pointerup", () => { if (state.charging) fire(); });
+  canvas.addEventListener("pointermove", (e) => { if (state.charging && !isCoarsePointer()) aimFromPointer(e); });
+  canvas.addEventListener("pointerup", () => { if (state.charging && !isCoarsePointer()) fire(); });
 
   const fireBtn = document.getElementById("btn-fire");
   fireBtn.addEventListener("pointerdown", (e) => {
     e.preventDefault();
+    try { fireBtn.setPointerCapture(e.pointerId); } catch (_) {}
     if (!canControl()) return;
     state.charging = true;
     state.chargeDir = 1;
     state.power = 0;
   });
-  fireBtn.addEventListener("pointerup", () => { if (state.charging) fire(); });
+  const endFire = () => { if (state.charging) fire(); };
+  fireBtn.addEventListener("pointerup", endFire);
+  fireBtn.addEventListener("pointercancel", endFire);
 
-  document.getElementById("btn-ang-down").addEventListener("click", () => nudgeAngle(-3));
-  document.getElementById("btn-ang-up").addEventListener("click", () => nudgeAngle(3));
+  function bindHold(id, code) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const down = (e) => {
+      e.preventDefault();
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      state.keys.add(code);
+    };
+    const up = () => { state.keys.delete(code); };
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    el.addEventListener("lostpointercapture", up);
+  }
+  bindHold("btn-move-left", "ArrowLeft");
+  bindHold("btn-move-right", "ArrowRight");
+  bindHold("btn-ang-down", "ArrowDown");
+  bindHold("btn-ang-up", "ArrowUp");
+  bindHold("btn-ang-pad-down", "ArrowDown");
+  bindHold("btn-ang-pad-up", "ArrowUp");
   document.querySelectorAll("[data-mode]").forEach((btn) => btn.addEventListener("click", () => openSelect(btn.dataset.mode)));
   document.getElementById("btn-again").addEventListener("click", () => openSelect(state.mode));
   document.getElementById("btn-home").addEventListener("click", goHome);
