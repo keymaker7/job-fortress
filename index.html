@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>직업전쟁 · Job Fortress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&family=Jua&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game" width="1280" height="720"></canvas>
+
+      <button type="button" id="btn-sound" class="icon-btn" aria-label="소리">🔊</button>
+
+      <div id="hud" class="hidden">
+        <div class="hud-sky">
+          <div class="wind-box" id="hud-wind"></div>
+          <div class="hud-turn" id="hud-turn"></div>
+          <canvas id="minimap" width="200" height="78"></canvas>
+        </div>
+        <div class="hud-dock">
+          <div class="hud-panel">
+            <div class="dial-wrap">
+              <button type="button" id="btn-ang-down" class="mini">−</button>
+              <canvas id="angle-dial" width="112" height="112"></canvas>
+              <button type="button" id="btn-ang-up" class="mini">+</button>
+            </div>
+            <div class="bars">
+              <div class="bar-row">
+                <span>ENERGY</span>
+                <div class="energy-bar"><i id="hud-energy"></i></div>
+                <strong id="hud-energy-num">100</strong>
+              </div>
+              <div class="bar-row">
+                <span>POWER</span>
+                <div class="power-bar"><i id="hud-power"></i></div>
+                <strong id="hud-power-num">0</strong>
+              </div>
+              <div class="bar-row">
+                <span>MOVE</span>
+                <div class="move-bar"><i id="hud-move"></i></div>
+                <strong id="hud-move-num">100</strong>
+              </div>
+            </div>
+            <div class="hud-actions">
+              <strong id="hud-angle">48°</strong>
+              <button type="button" id="btn-fire">꾹 눌러 발사</button>
+            </div>
+          </div>
+          <div class="hud-help" id="hud-help">↑↓ 각도 · ←→ 조금 이동 · 스페이스를 누르면 힘이 차고, 떼면 날아갑니다</div>
+        </div>
+      </div>
+
+      <div id="toast" class="hidden"></div>
+      <div id="banner" class="hidden"></div>
+
+      <section id="screen-title" class="screen bottom">
+        <div class="title-card compact">
+          <p class="eyebrow">미사일 없는 포트리스</p>
+          <h1>직업전쟁</h1>
+          <p class="tagline">서류, 슬리퍼, 금괴로 한 판. 바람 읽고 머리 위에 떨어뜨리세요.</p>
+          <div class="title-actions">
+            <button type="button" class="primary" data-mode="cpu">1인 · 컴퓨터랑</button>
+            <button type="button" class="ghost" data-mode="pvp">2인 · 한 화면</button>
+            <button type="button" class="ghost" id="btn-howto">하는 법</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-howto" class="screen hidden">
+        <div class="title-card">
+          <p class="eyebrow">30초면 됩니다</p>
+          <h2>이렇게 해요</h2>
+          <div class="how-grid">
+            <div class="how-card">
+              <b>1. 각도</b>
+              <p>↑ ↓ 로 각도를 꺾어요. 별은 방향만 짧게 보여줍니다.</p>
+            </div>
+            <div class="how-card">
+              <b>2. 이동 · 힘</b>
+              <p>← → 로 조금 걸어요. MOVE가 짧습니다. 스페이스를 누르고 있으면 힘이 차고, 떼면 발사.</p>
+            </div>
+            <div class="how-card">
+              <b>3. 바람</b>
+              <p>위쪽 선풍기를 보세요. 양쪽이 한 번씩 던진 뒤에만 새로 바뀝니다.</p>
+            </div>
+            <div class="how-card">
+              <b>4. 직업</b>
+              <p>금괴는 묵직, 자소서는 멀리, 아아는 얼림, 링라이트는 넓게 터집니다.</p>
+            </div>
+          </div>
+          <div class="title-actions">
+            <button type="button" class="primary" id="btn-howto-close">알겠어요!</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-select" class="screen hidden">
+        <div class="select-wrap">
+          <p class="eyebrow" id="select-who">1P는 누구로 할래?</p>
+          <h2>오늘 무슨 직업으로 싸울래?</h2>
+          <div id="char-grid" class="char-grid"></div>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen hidden">
+        <div class="title-card result-card">
+          <canvas id="result-art" width="180" height="160"></canvas>
+          <p class="eyebrow" id="result-eyebrow">경기 종료</p>
+          <h1 id="result-title">승리</h1>
+          <p class="tagline" id="result-line"></p>
+          <p class="hint" id="result-meta"></p>
+          <div class="title-actions">
+            <button type="button" class="primary" id="btn-again">같은 모드로 한 판 더</button>
+            <button type="button" class="ghost" id="btn-home">처음으로</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
